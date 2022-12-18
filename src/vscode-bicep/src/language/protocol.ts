@@ -41,6 +41,22 @@ export const deploymentGraphRequestType = new ProtocolRequestType<
   void
 >("textDocument/deploymentGraph");
 
+export interface GetDeploymentDataRequest {
+  textDocument: TextDocumentIdentifier;
+}
+
+export interface GetDeploymentDataResponse {
+  templateJson: string;
+}
+
+export const getDeploymentDataRequestType = new ProtocolRequestType<
+  GetDeploymentDataRequest,
+  GetDeploymentDataResponse | null,
+  never,
+  void,
+  void
+>("bicep/getDeploymentData");
+
 export interface BicepCacheParams {
   textDocument: TextDocumentIdentifier;
   target: string;

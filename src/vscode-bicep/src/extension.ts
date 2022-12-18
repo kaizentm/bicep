@@ -22,6 +22,10 @@ import {
   createLanguageService,
   ensureDotnetRuntimeInstalled,
 } from "./language";
+import {
+  ShowDeployPaneCommand,
+  ShowDeployPaneToSideCommand,
+} from "./commands/showDeployPane";
 import { TreeManager } from "./tree/TreeManager";
 import { updateUiContext } from "./updateUiContext";
 import { createAzExtOutputChannel } from "./utils/AzExtOutputChannel";
@@ -51,6 +55,7 @@ import { BuildCommand } from "./commands/build";
 import { CommandManager } from "./commands/commandManager";
 import { setGlobalStateKeysToSyncBetweenMachines } from "./globalState";
 import * as surveys from "./feedback/surveys";
+import { DeployPaneViewManager } from "./panes/deploy";
 
 let languageClient: lsp.LanguageClient | null = null;
 
@@ -134,6 +139,15 @@ export async function activate(
           new TreeManager(outputChannelManager)
         );
 
+        const deployPaneViewManager = extension.register(
+          new DeployPaneViewManager(
+            actionContext,
+            extension.extensionUri,
+            languageClient,
+            treeManager
+          )
+        );
+
         const suppressedWarningsManager = new SuppressedWarningsManager();
 
         // Register commands.
@@ -160,6 +174,8 @@ export async function activate(
             ),
             new InsertResourceCommand(languageClient),
             pasteAsBicepCommand,
+            new ShowDeployPaneCommand(deployPaneViewManager),
+            new ShowDeployPaneToSideCommand(deployPaneViewManager),
             new ShowVisualizerCommand(viewManager),
             new ShowVisualizerToSideCommand(viewManager),
             new ShowSourceCommand(viewManager),

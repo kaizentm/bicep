@@ -46,13 +46,16 @@
     "onCommand:bicep.insertResource",
     "onCommand:bicep.importKubernetesManifest",
     "onCommand:bicep.pasteAsBicep",
+    "onCommand:bicep.showDeployPane",
+    "onCommand:bicep.showDeployPaneToSide",
     "onCommand:bicep.showSource",
     "onCommand:bicep.showVisualizer",
     "onCommand:bicep.showVisualizerToSide",
     "onCommand:bicep.gettingStarted.copyToClipboard",
     "onCommand:bicep.gettingStarted.createBicepFile",
     "onCommand:bicep.gettingStarted.openBicepFile",
-    "onWebviewPanel:bicep.visualizer"
+    "onWebviewPanel:bicep.visualizer",
+    "onWebviewPanel:bicep.deployPane"
   ],
   "main": "./out/extension",
   "enabledApiProposals": [],
@@ -151,6 +154,18 @@
       }
     ],
     "commands": [
+      {
+        "command": "bicep.showDeployPane",
+        "title": "Show Deployment Pane",
+        "category": "Bicep",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "bicep.showDeployPaneToSide",
+        "title": "Show Deployment Pane to the Side",
+        "category": "Bicep",
+        "icon": "$(cloud-upload)"
+      },
       {
         "command": "bicep.showVisualizer",
         "title": "Open Bicep Visualizer",
@@ -273,6 +288,12 @@
     "menus": {
       "editor/title": [
         {
+          "command": "bicep.showDeployPaneToSide",
+          "when": "editorLangId == bicep",
+          "alt": "bicep.showDeployPane",
+          "group": "navigation"
+        },
+        {
           "command": "bicep.showVisualizerToSide",
           "when": "editorLangId == bicep",
           "alt": "bicep.showVisualizer",
@@ -321,6 +342,16 @@
           "group": "2_bicep_2_deploy"
         },
         {
+          "command": "bicep.showDeployPane",
+          "when": "resourceLangId == bicep",
+          "group": "2_bicep_2_deploy"
+        },
+        {
+          "command": "bicep.showDeployPaneToSide",
+          "when": "resourceLangId == bicep",
+          "group": "2_bicep_2_deploy"
+        },
+        {
           "command": "bicep.showVisualizer",
           "when": "resourceLangId == bicep",
           "group": "2_bicep_3_visualize"
@@ -359,6 +390,16 @@
         },
         {
           "command": "bicep.deploy",
+          "when": "resourceLangId == bicep",
+          "group": "2_bicep_2_deploy"
+        },
+        {
+          "command": "bicep.showDeployPane",
+          "when": "resourceLangId == bicep",
+          "group": "2_bicep_2_deploy"
+        },
+        {
+          "command": "bicep.showDeployPaneToSide",
           "when": "resourceLangId == bicep",
           "group": "2_bicep_2_deploy"
         },
@@ -410,6 +451,16 @@
           "group": "2_bicep_2_deploy"
         },
         {
+          "command": "bicep.showDeployPane",
+          "when": "resourceLangId == bicep",
+          "group": "2_bicep_2_deploy"
+        },
+        {
+          "command": "bicep.showDeployPaneToSide",
+          "when": "resourceLangId == bicep",
+          "group": "2_bicep_2_deploy"
+        },
+        {
           "command": "bicep.showVisualizer",
           "when": "resourceLangId == bicep",
           "group": "2_bicep_3_visualize"
@@ -444,6 +495,14 @@
         },
         {
           "command": "bicep.insertResource",
+          "group": "0_bicep"
+        },
+        {
+          "command": "bicep.showDeployPane",
+          "group": "0_bicep"
+        },
+        {
+          "command": "bicep.showDeployPaneToSide",
           "group": "0_bicep"
         },
         {
@@ -610,6 +669,7 @@
     "@vscode/test-electron": "^2.2.3",
     "@vscode/vsce": "^2.17.0",
     "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.7.3",
     "esbuild-loader": "^3.0.0",
     "eslint": "^8.34.0",
     "eslint-config-prettier": "^8.6.0",
@@ -628,6 +688,7 @@
     "react-test-renderer": "^18.2.0",
     "rimraf": "^4.1.2",
     "semver": "^7.3.8",
+    "style-loader": "^3.3.1",
     "svg-inline-loader": "^0.8.2",
     "terser-webpack-plugin": "5.3.6",
     "ts-jest": "^27.1.4",
@@ -643,6 +704,7 @@
     "@azure/identity": "^3.1.3",
     "@microsoft/vscode-azext-azureutils": "^0.3.7",
     "@microsoft/vscode-azext-utils": "^0.4.5",
+    "@vscode/webview-ui-toolkit": "^1.2.0",
     "cytoscape": "^3.23.0",
     "cytoscape-elk": "^2.1.0",
     "fs-extra": "^11.1.0",
