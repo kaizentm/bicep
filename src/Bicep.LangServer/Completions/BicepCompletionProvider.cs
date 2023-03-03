@@ -1276,23 +1276,9 @@ namespace Bicep.LanguageServer.Completions
                     break;
 
                 case ResourceScopeType _:
-                    foreach (var resource in model.AllResources)
+                    foreach (var completion in GetResourceScopeTypeCompletions(model, context))
                     {
-                        var symbolName = resource switch
-                        {
-                            DeclaredResourceMetadata declaredResource => declaredResource.Symbol.Name,
-                            ParameterResourceMetadata parameterResource => parameterResource.Symbol.Name,
-                            _ => null
-                        };
-
-                        if (symbolName is not null)
-                        {
-                            yield return CompletionItemBuilder.Create(CompletionItemKind.Reference, symbolName)
-                                .WithPlainTextEdit(replacementRange, symbolName)
-                                .Preselect()
-                                .WithSortText(GetSortText(symbolName, CompletionPriority.High))
-                                .Build();
-                        }
+                        yield return completion;
                     }
                     break;
             }
@@ -1394,6 +1380,30 @@ namespace Bicep.LanguageServer.Completions
             }
 
             return TextSpan.Nil;
+        }
+
+        private static IEnumerable<CompletionItem> GetResourceScopeTypeCompletions(SemanticModel model, BicepCompletionContext context)
+        {
+            var replacementRange = context.ReplacementRange;
+            foreach (var resource in model.AllResources)
+            {
+                var symbolName = resource switch
+                {
+                    DeclaredResourceMetadata declaredResource => declaredResource.Symbol.Name,
+                    ParameterResourceMetadata parameterResource => parameterResource.Symbol.Name, // TODO: check if param is valid
+                    _ => null
+                };
+
+                if (symbolName is not null)
+                {
+                    yield return CompletionItemBuilder.Create(CompletionItemKind.Value, symbolName)
+                        .WithPlainTextEdit(replacementRange, symbolName)
+                        .WithDetail("TODO: detail") // TODO: get the declaration (resource x, param y, etc)
+                        .Preselect()
+                        .WithSortText(GetSortText(symbolName, CompletionPriority.High))
+                        .Build();
+                }
+            }
         }
 
         private static CompletionItem CreateResourceOrModuleConditionCompletion(Range replacementRange)
