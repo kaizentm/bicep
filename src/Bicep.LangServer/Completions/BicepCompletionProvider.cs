@@ -15,6 +15,7 @@ using Bicep.Core.FileSystem;
 using Bicep.Core.Parsing;
 using Bicep.Core.Resources;
 using Bicep.Core.Semantics;
+using Bicep.Core.Semantics.Metadata;
 using Bicep.Core.Semantics.Namespaces;
 using Bicep.Core.Syntax;
 using Bicep.Core.Text;
@@ -1272,6 +1273,27 @@ namespace Bicep.LanguageServer.Completions
                     };
 
                     yield return CreateContextualSnippetCompletion(label, label, snippet, replacementRange, CompletionPriority.High);
+                    break;
+
+                case ResourceScopeType _:
+                    foreach (var resource in model.AllResources)
+                    {
+                        var symbolName = resource switch
+                        {
+                            DeclaredResourceMetadata declaredResource => declaredResource.Symbol.Name,
+                            ParameterResourceMetadata parameterResource => parameterResource.Symbol.Name,
+                            _ => null
+                        };
+
+                        if (symbolName is not null)
+                        {
+                            yield return CompletionItemBuilder.Create(CompletionItemKind.Reference, symbolName)
+                                .WithPlainTextEdit(replacementRange, symbolName)
+                                .Preselect()
+                                .WithSortText(GetSortText(symbolName, CompletionPriority.High))
+                                .Build();
+                        }
+                    }
                     break;
             }
         }
