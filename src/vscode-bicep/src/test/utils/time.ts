@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { Deferred } from "../../utils/Deferred";
 import { sleep } from "../../utils/time";
 
 export async function retryWhile<T>(
@@ -39,4 +40,28 @@ export async function until(
     () => !predicate(),
     retryOptions
   );
+}
+
+//asdfg test
+export async function awaitWithTimeout(
+  promise: Promise<unknown>,
+  timeoutMs: number,
+  timedOutMessage: string | (() => string)
+): Promise<void> {
+  const timeoutDeferred = new Deferred<void>();
+  let timedOut = false;
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    timeoutDeferred.resolve();
+  }, timeoutMs);
+
+  await Promise.race([timeoutDeferred.promise, promise]);
+  clearTimeout(timeout);
+
+  if (timedOut) {
+    const msg = `Timed out after ${timeoutMs / 1000} seconds: ${
+      typeof timedOutMessage === "string" ? timedOutMessage : timedOutMessage()
+    }`;
+    throw new Error(msg);
+  }
 }

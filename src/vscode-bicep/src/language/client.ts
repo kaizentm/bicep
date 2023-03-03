@@ -163,7 +163,7 @@ export async function ensureDotnetRuntimeInstalled(
   const customDotnetRuntimePathConfig = getCustomDotnetRuntimePathConfig();
   if (customDotnetRuntimePathConfig) {
     // This setting is a common source of issues. Add explicit logging to help with investigation.
-    getLogger().info(
+    getLogger().info( //asdfg why is this only info?
       `Found config for '${dotnetAcquisitionExtensionSetting}.${existingDotnetPathSetting}': ${JSON.stringify(
         customDotnetRuntimePathConfig
       )}`

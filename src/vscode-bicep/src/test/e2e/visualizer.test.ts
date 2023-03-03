@@ -16,7 +16,7 @@ import {
 } from "./commands";
 import { resolveExamplePath } from "./examples";
 
-const extensionLogPath = path.join(__dirname, "../../../bicep.log");
+const extensionLogPath = path.join(__dirname, "../../../bicep.log"); //asdfg visualizerLogPath?
 
 describe("visualizer", (): void => {
   afterEach(executeCloseAllEditors);

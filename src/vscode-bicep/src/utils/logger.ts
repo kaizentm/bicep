@@ -35,13 +35,13 @@ export class WinstonLogger implements Logger {
         )
       ),
       transports: [
-        new outputChannelTransport(outputChannel),
+        new outputChannelTransport(outputChannel), // asdfg really log everything here?
         ...(process.env.TEST_MODE === "e2e"
           ? [
               new winston.transports.File({
                 dirname: path.resolve(__dirname, ".."),
-                filename: "bicep.log",
-                options: { flags: "w" },
+                filename: "bicep.log", //asdfg rename bicep.e2e.log?      //asdfg write filename to log
+                options: { flags: "w" }, //asdfg
               }),
             ]
           : []),
@@ -102,7 +102,7 @@ export function createLogger(
   return logger;
 }
 
-export function getLogger(): Logger {
+export function getLogger(): Logger { //asdfg rename?
   if (!logger) {
     throw new Error(
       "Logger is undefined. Make sure to call createLogger() first."

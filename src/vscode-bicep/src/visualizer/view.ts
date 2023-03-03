@@ -164,7 +164,7 @@ export class BicepVisualizerView extends Disposable {
     switch (message.kind) {
       case "READY":
         getLogger().debug(
-          `Visualizer for ${this.documentUri.fsPath} is ready.`
+          `Visualizer for ${this.documentUri.fsPath} is ready.` //asdfg does this go to output channel?
         );
 
         this.readyToRender = true;
