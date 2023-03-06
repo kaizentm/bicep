@@ -12,6 +12,7 @@ using Bicep.Core.Diagnostics;
 using Bicep.Core.Emit;
 using Bicep.Core.Extensions;
 using Bicep.Core.FileSystem;
+using Bicep.Core.Navigation;
 using Bicep.Core.Parsing;
 using Bicep.Core.Resources;
 using Bicep.Core.Semantics;
@@ -269,8 +270,16 @@ namespace Bicep.LanguageServer.Completions
                 return Enumerable.Empty<CompletionItem>();
             }
 
+            var arrayType = GetDeclaredArrayItemType(model, context);
+            if (arrayType != null)
+            {
+                // handled by GetArrayItemCompletions
+                return Enumerable.Empty<CompletionItem>();
+            }
+
             // when we're inside an expression that is inside a property that expects a compile-time constant value,
             // we should not be emitting accessible symbol completions
+
             return GetAccessibleSymbolCompletions(model, context);
         }
 
@@ -1114,18 +1123,10 @@ namespace Bicep.LanguageServer.Completions
 
         private IEnumerable<CompletionItem> GetArrayItemCompletions(SemanticModel model, BicepCompletionContext context)
         {
-            if (!context.Kind.HasFlag(BicepCompletionContextKind.ArrayItem))
-            {
-                return Enumerable.Empty<CompletionItem>();
-            }
-
-            var declaredTypeAssignment = GetDeclaredTypeAssignment(model, context.Array);
-            if (declaredTypeAssignment?.Reference.Type is not ArrayType arrayType)
-            {
-                return Enumerable.Empty<CompletionItem>();
-            }
-
-            return GetValueCompletionsForType(model, context, arrayType.Item.Type, loopsAllowed: false);
+            var arrayType = GetDeclaredArrayItemType(model, context);
+            return arrayType == null
+                ? Enumerable.Empty<CompletionItem>()
+                : GetValueCompletionsForType(model, context, arrayType.Item.Type, loopsAllowed: false);
         }
 
         private IEnumerable<CompletionItem> GetFunctionParamCompletions(SemanticModel model, BicepCompletionContext context)
@@ -1385,24 +1386,36 @@ namespace Bicep.LanguageServer.Completions
         private static IEnumerable<CompletionItem> GetResourceScopeTypeCompletions(SemanticModel model, BicepCompletionContext context)
         {
             var replacementRange = context.ReplacementRange;
+            var enclosingDeclaration = context.EnclosingDeclaration;
+
             foreach (var resource in model.AllResources)
             {
-                var symbolName = resource switch
+                DeclaredSymbol? symbol = resource switch
                 {
-                    DeclaredResourceMetadata declaredResource => declaredResource.Symbol.Name,
-                    ParameterResourceMetadata parameterResource => parameterResource.Symbol.Name, // TODO: check if param is valid
+                    DeclaredResourceMetadata declaredResource => declaredResource.Symbol,
                     _ => null
                 };
 
-                if (symbolName is not null)
+                if (symbol is null || symbol.DeclaringSyntax == enclosingDeclaration)
                 {
-                    yield return CompletionItemBuilder.Create(CompletionItemKind.Value, symbolName)
-                        .WithPlainTextEdit(replacementRange, symbolName)
-                        .WithDetail("TODO: detail") // TODO: get the declaration (resource x, param y, etc)
-                        .Preselect()
-                        .WithSortText(GetSortText(symbolName, CompletionPriority.High))
-                        .Build();
+                    continue;
                 }
+
+                var completionItemKind = GetCompletionItemKind(symbol);
+                var symbolName = symbol.Name;
+                string? detail = null;
+
+                if (symbol.DeclaringSyntax is ITopLevelDeclarationSyntax topLevelDeclSyntax)
+                {
+                    detail = $"{topLevelDeclSyntax.Keyword.Text} {symbolName}";
+                }
+
+                yield return CompletionItemBuilder.Create(completionItemKind, symbolName)
+                    .WithPlainTextEdit(replacementRange, symbolName)
+                    .WithDetail(detail)
+                    .Preselect()
+                    .WithSortText(GetSortText(symbolName, CompletionPriority.High))
+                    .Build();
             }
         }
 
@@ -1762,6 +1775,17 @@ namespace Bicep.LanguageServer.Completions
             {
                 yield return CreateKeywordCompletion(LanguageConstants.AsKeyword, "As keyword", context.ReplacementRange);
             }
+        }
+
+        private static ArrayType? GetDeclaredArrayItemType(SemanticModel model, BicepCompletionContext context)
+        {
+            if (!context.Kind.HasFlag(BicepCompletionContextKind.ArrayItem))
+            {
+                return null;
+            }
+
+            var declaredTypeAssignment = GetDeclaredTypeAssignment(model, context.Array);
+            return declaredTypeAssignment?.Reference.Type is ArrayType arrayType ? arrayType : null;
         }
 
         // the priority must be a number in the sort text

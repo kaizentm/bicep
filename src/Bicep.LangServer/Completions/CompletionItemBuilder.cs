@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 using System;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -67,7 +68,7 @@ namespace Bicep.LanguageServer.Completions
             return this;
         }
 
-        public CompletionItemBuilder WithDetail(string detail)
+        public CompletionItemBuilder WithDetail(string? detail)
         {
             this.detail = detail;
             return this;
