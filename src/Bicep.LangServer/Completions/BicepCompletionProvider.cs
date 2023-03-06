@@ -270,8 +270,12 @@ namespace Bicep.LanguageServer.Completions
                 return Enumerable.Empty<CompletionItem>();
             }
 
-            var arrayType = GetDeclaredArrayItemType(model, context);
-            if (arrayType != null)
+            if (
+                context.Property != null
+                && context.EnclosingDeclaration != null
+                && model.GetDeclaredType(context.EnclosingDeclaration)?.TypeKind == TypeKind.Resource
+                && model.GetSymbolInfo(context.Property)?.Name == "dependsOn"
+            ) // TODO: this is temporary, this should probably use a context kind check
             {
                 // handled by GetArrayItemCompletions
                 return Enumerable.Empty<CompletionItem>();
@@ -1123,7 +1127,7 @@ namespace Bicep.LanguageServer.Completions
 
         private IEnumerable<CompletionItem> GetArrayItemCompletions(SemanticModel model, BicepCompletionContext context)
         {
-            var arrayType = GetDeclaredArrayItemType(model, context);
+            var arrayType = GetDeclaredArrayType(model, context);
             return arrayType == null
                 ? Enumerable.Empty<CompletionItem>()
                 : GetValueCompletionsForType(model, context, arrayType.Item.Type, loopsAllowed: false);
@@ -1777,7 +1781,7 @@ namespace Bicep.LanguageServer.Completions
             }
         }
 
-        private static ArrayType? GetDeclaredArrayItemType(SemanticModel model, BicepCompletionContext context)
+        private static ArrayType? GetDeclaredArrayType(SemanticModel model, BicepCompletionContext context)
         {
             if (!context.Kind.HasFlag(BicepCompletionContextKind.ArrayItem))
             {
@@ -1785,7 +1789,7 @@ namespace Bicep.LanguageServer.Completions
             }
 
             var declaredTypeAssignment = GetDeclaredTypeAssignment(model, context.Array);
-            return declaredTypeAssignment?.Reference.Type is ArrayType arrayType ? arrayType : null;
+            return declaredTypeAssignment?.Reference.Type as ArrayType;
         }
 
         // the priority must be a number in the sort text
