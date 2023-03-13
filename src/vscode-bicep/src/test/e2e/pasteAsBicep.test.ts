@@ -6,7 +6,7 @@
 import vscode, { ConfigurationTarget, Selection, TextDocument } from "vscode";
 import {
   executeCloseAllEditors,
-  executeEditorPaste,
+  executeEditorPasteCommand,
   executePasteAsBicepCommand,
 } from "./commands";
 import { getBicepConfiguration } from "../../language/getBicepConfiguration";
